@@ -2,7 +2,6 @@
 
   %++++++++++++++++++++++++++++++++++++++++
 % Don't modify this section unless you know what you're doing!
-
 \documentclass[letterpaper,12pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{tabularx} % extra features for tabular environment
@@ -19,7 +18,7 @@
 \author{Kathelin Castano, Bhavika Shah, Zahra Simpson}
 \date{\today}
 \maketitle
-
+\clearpage
 
 
 \section{Introduction}
@@ -33,14 +32,19 @@ In this project, the objective was to develop an advanced algorithm that would i
 We need a recursive function to go through the previously calculated optimal cost within the matrix, referred to as $DP$ that compares strings $A$ and $B$, and retrace our steps to decide what typo is present within the string based on the cost. The recursive function needs to be able to compare the various characters in the typo string and the target string and recursively calculate the costs to edit the characters depending on whether the character has been substituted, inserted, deleted or transposed. The parameters of the recursive function will include which cell of the matrix we are currently in and how it will be traversed depending on the comparisons between the two strings. We know that within the matrix we must refer to the cell above, behind and diagonally above the cell we are currently in. We must refer to the matrix, $DP[i,j]$ at position $[i-1, j]$, $DP$ at position $[i, j-1]$, $DP$ at position $[i-1, j-1]$ and $DP$ at position $[i-2, j-2]$.
 
 \subsection{What recurrence can you use to model this problem using dynamic programming?}
-Where $A$ and $B$ are the target and typo strings, $n$ and $m$ are the lengths of the two strings respectively, and $DP$ is a matrix of size $n+1$, $m+1$. 
+Where $A$ and $B$ are the target and typo strings, $n$ and $m$ are the lengths of the two strings respectively, $DP$ is a matrix of size $n+1$, $m+1$ and $i,j$ are the cell positions within the matrix. $DP[i,j]$ is the minimum of the cost of substituting, inserting, deleting or transposing. 
 \newline
 \begin{lstlisting}
-DP[An,Bm] = minimum
-	( DP[An-1,Bm-1] + substitution(An,Bm);
-	  DP[An,  Bm-1] + insertion(Bm);
-	  DP[An-1,Bm]   + deletion(An);
-	  DP[An-2,Bm-2] + transposition(An,Bm);
+Base Cases:
+Two strings are empty; return 0 
+If Target string or typo string are empty; return 0 
+
+DP[A_{n},B_{m}] = minimum
+      if A = B, then DP[i-1, j-1] otherwise
+    	  DP[i-1,j-1] + substitution cost(An,Bm);
+    	  DP[i,j-1]   + insertion cost(Bm);
+    	  DP[i-1,j]   + deletion cost(An);
+    	  DP[i-2,j-2] + transposition cost (An,Bm);
 	)
 \end{lstlisting}
 
@@ -51,7 +55,9 @@ If both strings are empty, we know we will not need to calculate costs, and ther
 Using a 2D matrix we can store what the cost is to transform the target string to the typo string given by comparing the characters in both strings. Using the reccurance, we will be able to fill in every cell in the matrix by comparing each cell to its neighboring cells and choosing the minimum cost of those various cells. It is important to note that the strings must be entered in reverse, meaning that the character comparisons will begin with the last character in each string and going until the first character. Reversing the strings will allow successful backtracking within the matrix once the lowest possible cost is totaled allowing us to work from the last cell in the matrix that allowed for the minimum cost, back to the first minimum cost cell that we began with.  
 
 \subsection{Give pseudocode for a memoized dynamic programming algorithm to solve the problem. Your pseudocode should not describe how to compute the cost for each possible typo.}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Typo Determinater Initialiser Algorithm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \IncMargin{1em}
 \begin{algorithm}
 \SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
@@ -61,15 +67,41 @@ Using a 2D matrix we can store what the cost is to transform the target string t
 \Input{Typo String, $B$ with $m$ characters}
 \Output{Minimum cost to transform target string into typo string and sequence of typos within this cost}
 \BlankLine
-\emph{special treatment of the first line}\;
 {DP = Matrix (n+1, m+1);}\\ 
-{Initialize all cells of M to -1 (sentinel value?)}\\
+{Initialize all cells of M to -1}\\
 \textbf{return} {TypoDeterminater($A$, $B$)}\\
 \caption{TypoDeterminaterInitializer\label{IR}}
 \end{algorithm}\DecMargin{1em}
-%%%%%%%% 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Reconstructed Path Algorithm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\IncMargin{1em}
+\begin{algorithm}
+\SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
+\SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{Typo String, $A$ with $n$ characters }
+\Input{Typo String, $B$ with $m$ characters}
+\Input{Parent pointer, $P$}
+\Output{Reconstructed path from DP Matrix}
+\BlankLine
+\uIf{P in DP[i,j] is a match or substitution}{
+ReconstructPath(A, B, i-1, j-1); \\
+Match(A, B, i,j);}
+\uIf{P in DP[i,j] is a match or substitution}{
+ReconstructPath(A, B, i-1, j-1); \\
+Insert (B, j);}
+\uIf{P in DP[i,j] is a deletion}{
+ReconstructPath(A, B, i-1, j); \\
+Insert (A, i);}
+\uIf{P in DP[i,j] is a transposition}{
+ReconstructPath(A, B, i-2, j-2); \\
+Transpose (B, i,j);}
+\caption{ReconstructedPath \label{IR3}}
+\end{algorithm}\DecMargin{1em}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Memoized Determinater Initialiser Algorithm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \IncMargin{1em}
 \begin{algorithm}
 \SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
@@ -79,40 +111,29 @@ Using a 2D matrix we can store what the cost is to transform the target string t
 \Input{Typo String, $B$ with $m$ characters}
 \Output{Minimum cost to transform target string into typo string and sequence of typos within this cost}
 \BlankLine
-\emph{special treatment of the first line}\;
 \uIf{$A$ = B = NULL}{
 \textbf{return} {0}\;
 }
 \uElseIf{$A$ = NULL }{
 \textbf{return}{ 0;}}
-current section becomes this one\;
-{
-go back to the beginning of current section\;
-}
-
-{DP = Matrix (n+1, m+1);}\\ 
-{Initialize all cells of M to -1 (sentinel value?)}\\
-\textbf{return} {TypoDeterminater($A$, $B$)}\\
+\uIf{n and m $>$ 0}
+{DP[i, j] = minimum MemoizedTypoDeterminater (i-1, j-1 + \\
+     substitution(A[i],B[j]), i, j-1  +\\ 
+     insertion(B[j]), i-1,j   + \\
+     deletion(A), i-2, j-2 + transposition(A,B)   );\newline
+    
+\textbf{return} {$DP[i][j]$ optimal cost of optimal alignment }}
+{ReconstructPath} {($A,B, DP[i][j]$) }\\
 \caption{MemoizedDeterminaterInitializer\label{IR2}}
 
 \end{algorithm}\DecMargin{1em}
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage 
 \subsection{What is the worst-case time complexity of your memoized algorithm? Give a set of nested loops that could be used in an iterative dynamic programming solution to this problem.}
 
 
 \subsection{Can the space complexity of the iterative algorithm be improved relative to the memoized algorithm? Justify your answer.}
-
-
-
-
-\section{Analysis}
-
-In this section you will need to show your experimental results. Use tables and
-graphs when it is possible is an example.
-
-
-\section{Conclusions}
-Here you briefly summarize your findings.
 
 \end{document}
