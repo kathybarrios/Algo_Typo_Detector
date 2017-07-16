@@ -111,10 +111,10 @@ Transpose (B, i,j);}
 \Input{Typo String, $B$ with $m$ characters}
 \Output{Minimum cost to transform target string into typo string and sequence of typos within this cost}
 \BlankLine
-\uIf{$A$ = B = NULL}{
+\uIf{A = B = NULL}{
 \textbf{return} {0}\;
 }
-\uElseIf{$A$ = NULL }{
+\uElseIf{A or B NULL }{
 \textbf{return}{ 0;}}
 \uIf{n and m $>$ 0}
 {DP[i, j] = minimum MemoizedTypoDeterminater (i-1, j-1 + \\
@@ -124,12 +124,11 @@ Transpose (B, i,j);}
     
 \textbf{return} {$DP[i][j]$ optimal cost of optimal alignment }}
 {ReconstructPath} {($A,B, DP[i][j]$) }\\
-\caption{MemoizedDeterminaterInitializer\label{IR2}}
+\caption{MemoizedTypoDeterminater\label{IR2}}
 
 \end{algorithm}\DecMargin{1em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \clearpage 
 \subsection{What is the worst-case time complexity of your memoized algorithm? Give a set of nested loops that could be used in an iterative dynamic programming solution to this problem.}
 
